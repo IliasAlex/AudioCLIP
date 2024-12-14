@@ -84,7 +84,7 @@ class UrbanSound8K(td.Dataset):
             always_2d=True
         )
 
-        wav = librosa.resample(wav.T, sample_rate_, sample_rate)
+        wav = librosa.resample(wav.T, orig_sr=sample_rate_, target_sr=sample_rate)
 
         if wav.shape[0] == 1 and not mono:
             wav = np.concatenate((wav, wav), axis=0)
@@ -97,13 +97,13 @@ class UrbanSound8K(td.Dataset):
     def load_data(self):
         # read metadata
         meta = pd.read_csv(
-            os.path.join(self.root, 'metadata', 'UrbanSound8K.csv'),
+            os.path.join(self.root, 'UrbanSound8K.csv'),
             sep=',',
             index_col='slice_file_name'
         )
 
         for row_idx, (fn, row) in enumerate(meta.iterrows()):
-            path = os.path.join(self.root, 'audio', 'fold{}'.format(row['fold']), fn)
+            path = os.path.join(self.root, 'fold{}'.format(row['fold']), fn)
             self.data[fn] = path, self.sample_rate, self.mono
 
         # by default, the official split from the metadata is used

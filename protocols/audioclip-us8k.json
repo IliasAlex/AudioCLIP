@@ -19,7 +19,7 @@
     "class": "model.audioclip.AudioCLIP",
     "args": {
       "multilabel": false,
-      "pretrained": "/path/to/assets/trained_AudioCLIP.pt"
+      "pretrained": "/home/ilias/projects/AudioCLIP/assets/trained_AudioCLIP.pt"
     }
   },
   "Optimizer": {
@@ -40,7 +40,7 @@
   "Dataset": {
     "class": "utils.datasets.UrbanSound8K",
     "args": {
-      "root": "/path/to/UrbanSound8K",
+      "root": "/data/urbansound8k/",
       "sample_rate": 44100,
       "fold": 1,
       "mono": false,
