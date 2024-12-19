@@ -7,19 +7,19 @@
   "Setup": {
     "name": "Multimodal-Audio",
     "suffix": "CV01",
-    "batch_train": 64,
-    "batch_test": 64,
+    "batch_train": 32,
+    "batch_test": 32,
     "workers_train": 4,
     "workers_test": 4,
-    "epochs": 50,
+    "epochs": 5,
     "log_interval": 25,
-    "saved_models_path": "/path/to/saved/models"
+    "saved_models_path": "/home/ilias/projects/AudioCLIP/assets/"
   },
   "Model": {
     "class": "model.audioclip.AudioCLIP",
     "args": {
       "multilabel": false,
-      "pretrained": "/home/ilias/projects/AudioCLIP/assets/trained_AudioCLIP.pt"
+      "pretrained": "/home/ilias/projects/AudioCLIP/assets/UrbanSound8K_Multimodal-Audio-x2_ACLIP-CV01/UrbanSound8K_Multimodal-Audio-x2_ACLIP-CV01_ACLIP-CV01_performance=0.9188.pt"
     }
   },
   "Optimizer": {
@@ -41,8 +41,8 @@
     "class": "utils.datasets.UrbanSound8K",
     "args": {
       "root": "/data/urbansound8k/",
-      "sample_rate": 44100,
-      "fold": 1,
+      "sample_rate": 44100, 
+      "fold": 10, 
       "mono": false,
       "training": {"key": "train", "yes": true, "no": false}
     }

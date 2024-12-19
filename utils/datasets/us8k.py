@@ -125,6 +125,7 @@ class UrbanSound8K(td.Dataset):
                     break
         else:
             # if the random seed is None, use the official split
+            print("NOT RANDOM FOLD")
             for fn, row in meta.iterrows():
                 if int(row['fold']) in self.folds_to_load:
                     files_to_load.append(fn)

@@ -40,8 +40,8 @@ BATCH_TRAIN = 128
 BATCH_TEST = 1024
 WORKERS_TRAIN = 0
 WORKERS_TEST = 0
-EPOCHS = 100
-LOG_INTERVAL = 50
+EPOCHS = 1
+LOG_INTERVAL = 500000
 SAVED_MODELS_PATH = os.path.join(os.path.expanduser('~'), 'saved_models')
 
 
@@ -69,7 +69,7 @@ def run(experiment_name: str,
         model_suffix: Optional[str] = None,
         setup_suffix: Optional[str] = None,
         orig_stdout: Optional[io.TextIOBase] = None,
-        skip_train_val: bool = False):
+        skip_train_val: bool = True):
 
     with _utils.tqdm_stdout(orig_stdout) as orig_stdout:
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -268,7 +268,6 @@ def run(experiment_name: str,
 
                 logit_scale_at = torch.clamp(model.module.logit_scale_at.exp(), min=1.0, max=100.0)
                 y_pred = (logit_scale_at * audio_features @ text_features.transpose(-1, -2)).squeeze(1)
-
                 y = torch.zeros(
                     audio.shape[0], len(eval_loader.dataset.class_idx_to_label), dtype=torch.int8, device=device
                 )
@@ -283,7 +282,6 @@ def run(experiment_name: str,
                 else:
                     y_pred = torch.softmax(y_pred, dim=-1)
                     y = y.argmax(dim=-1)
-
             return y_pred, y
 
         trainer = ieng.Engine(training_step)
@@ -348,18 +346,18 @@ def run(experiment_name: str,
                     if line.get('is_checkpoint', False):
                         checkpoint_metrics.append(line['metric_label'])
 
-                for line_suffix in line_suffixes:
-                    _visdom.plot_line(
-                        vis=vis,
-                        window_name=scope['window_name'],
-                        env=visdom_env_name,
-                        line_label=line['line_label'] + line_suffix,
-                        x_label=scope['x_label'],
-                        y_label=scope['y_label'],
-                        width=scope['width'],
-                        height=scope['height'],
-                        draw_marker=(line['update_rate'] == 'epoch')
-                    )
+                # for line_suffix in line_suffixes:
+                #     _visdom.plot_line(
+                #         vis=vis,
+                #         window_name=scope['window_name'],
+                #         env=visdom_env_name,
+                #         line_label=line['line_label'] + line_suffix,
+                #         x_label=scope['x_label'],
+                #         y_label=scope['y_label'],
+                #         width=scope['width'],
+                #         height=scope['height'],
+                #         draw_marker=(line['update_rate'] == 'epoch')
+                #     )
 
         if checkpoint_metrics:
             score_name = 'performance'
@@ -384,7 +382,7 @@ def run(experiment_name: str,
                 score_name=score_name,
                 score_function=get_score,
                 n_saved=3,
-                save_as_state_dict=True,
+#                save_as_state_dict=True,
                 require_empty=False,
                 create_dir=True
             )
@@ -476,17 +474,17 @@ def run(experiment_name: str,
                             line_label = '{} {}'.format(line['line_label'], run_type)
                             line_value = validator.state.metrics[line['metric_label']]
 
-                            _visdom.plot_line(
-                                vis=vis,
-                                window_name=scope['window_name'],
-                                env=visdom_env_name,
-                                line_label=line_label,
-                                x_label=scope['x_label'],
-                                y_label=scope['y_label'],
-                                x=np.full(1, engine.state.epoch),
-                                y=np.full(1, line_value),
-                                draw_marker=True
-                            )
+                            # _visdom.plot_line(
+                            #     vis=vis,
+                            #     window_name=scope['window_name'],
+                            #     env=visdom_env_name,
+                            #     line_label=line_label,
+                            #     x_label=scope['x_label'],
+                            #     y_label=scope['y_label'],
+                            #     x=np.full(1, engine.state.epoch),
+                            #     y=np.full(1, line_value),
+                            #     draw_marker=True
+                            # )
 
                             tqdm_info.append('{}: {:.4f}'.format(line_label, line_value))
                         except KeyError:
@@ -572,9 +570,8 @@ def main():
         parser.add_argument('-R', '--random-seed', type=int, required=False)
         parser.add_argument('-s', '--suffix', type=str, required=False)
         parser.add_argument('-S', '--skip-train-val', action='store_true', default=False)
-
+        
         args, unknown_args = parser.parse_known_args()
-
         if args.batch_test is None:
             args.batch_test = args.batch_train
 
