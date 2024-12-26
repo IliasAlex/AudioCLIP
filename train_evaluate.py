@@ -67,7 +67,7 @@ def inference(model, audio_path, device, sample_rate=22010, duration=4.0, class_
 
 # Dataset Class
 class UrbanSound8KDataset(Dataset):
-    def __init__(self, csv_file, audio_dir, folds, sample_rate=16000, duration=4.0, transform=None):
+    def __init__(self, csv_file, audio_dir, folds, sample_rate=22010, duration=4.0, transform=None):
         """
         UrbanSound8K Dataset class for loading audio data.
         Args:
@@ -122,12 +122,22 @@ class AudioCLIPWithHead(nn.Module):
             p.requires_grad = True
 
         #self.classification_head = nn.Linear(1024, num_classes)
+        # self.classification_head = nn.Sequential(
+        #     nn.Linear(1024, 256),  # First hidden layer
+        #     nn.ReLU(),             # Non-linearity
+        #     nn.Dropout(0.5),       # Dropout for regularization
+        #     nn.Linear(256, num_classes)  # Output layer
+        # )
         self.classification_head = nn.Sequential(
-            nn.Linear(1024, 256),  # First hidden layer
-            nn.ReLU(),             # Non-linearity
-            nn.Dropout(0.5),       # Dropout for regularization
-            nn.Linear(256, num_classes)  # Output layer
+            nn.Linear(1024, 512),  # Increase first layer width
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(512, 256),  # Add an additional hidden layer
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(256, num_classes)
         )
+
 
 
     def forward(self, audio):
@@ -240,7 +250,7 @@ if __name__ == "__main__":
     train_folds, val_folds, test_folds = [1, 2, 3, 4, 5, 6, 7, 8], [10], [10]
     batch_size, epochs, learning_rate = 32, 20, 1e-4
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
     # Load Data
@@ -254,7 +264,7 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
 
     # Train and Evaluate
-    train_model(model, train_loader, val_loader, optimizer, criterion, device, epochs, save_path="best_model.pth")
+    #train_model(model, train_loader, val_loader, optimizer, criterion, device, epochs, save_path="best_model.pth")
     
     # Load the Best Model
     print("Loading the best saved model...")
